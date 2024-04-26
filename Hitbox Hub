@@ -1,0 +1,87 @@
+local scriptHub = {}
+
+-- Função para criar a hitbox
+function scriptHub:criarHitbox(tamanho)
+    local hitbox = Instance.new("Part")
+    hitbox.Size = Vector3.new(tamanho, tamanho, tamanho)
+    hitbox.Anchored = true
+    hitbox.CanCollide = false
+    hitbox.Transparency = 0.5
+    hitbox.Parent = game.Workspace
+    return hitbox
+end
+
+-- Função para verificar se algum jogador está dentro do alcance da hitbox
+function scriptHub:verificarJogadores(hitbox, alcance)
+    for _, jogador in ipairs(game.Players:GetPlayers()) do
+        if jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart") then
+            local distancia = (jogador.Character.HumanoidRootPart.Position - hitbox.Position).magnitude
+            if distancia <= alcance then
+                print(jogador.Name .. " está dentro do alcance da hitbox!")
+            end
+        end
+    end
+end
+
+-- Função para ajustar o tamanho da hitbox
+function scriptHub:ajustarTamanhoHitbox(novoTamanho)
+    self.tamanhoHitbox = novoTamanho
+end
+
+-- Função para ajustar o alcance de detecção
+function scriptHub:ajustarAlcanceDetecção(novoAlcance)
+    self.alcanceDetecção = novoAlcance
+end
+
+-- Inicializa as variáveis do hub
+scriptHub.tamanhoHitbox = 5 -- Tamanho inicial da hitbox
+scriptHub.alcanceDetecção = 10 -- Alcance inicial de detecção
+
+-- Cria a ScreenGui e o Frame principal
+local screenGui = Instance.new("ScreenGui")
+local mainFrame = Instance.new("Frame")
+screenGui.Parent = game.CoreGui
+mainFrame.Parent = screenGui
+mainFrame.BackgroundColor3 = Color3.new(1, 1, 1)
+mainFrame.Size = UDim2.new(0, 200, 0, 100)
+mainFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
+
+-- Cria uma TextBox para o tamanho da hitbox
+local tamanhoHitboxTextBox = Instance.new("TextBox")
+tamanhoHitboxTextBox.Parent = mainFrame
+tamanhoHitboxTextBox.Text = "Tamanho da Hitbox"
+tamanhoHitboxTextBox.Size = UDim2.new(0, 180, 0, 30)
+tamanhoHitboxTextBox.Position = UDim2.new(0, 10, 0, 10)
+
+-- Cria uma TextBox para o alcance de detecção
+local alcanceDetecçãoTextBox = Instance.new("TextBox")
+alcanceDetecçãoTextBox.Parent = mainFrame
+alcanceDetecçãoTextBox.Text = "Alcance de Detecção"
+alcanceDetecçãoTextBox.Size = UDim2.new(0, 180, 0, 30)
+alcanceDetecçãoTextBox.Position = UDim2.new(0, 10, 0, 50)
+
+-- Função para atualizar a hitbox e o alcance com base nas TextBoxes
+local function atualizarConfigurações()
+    local novoTamanho = tonumber(tamanhoHitboxTextBox.Text)
+    local novoAlcance = tonumber(alcanceDetecçãoTextBox.Text)
+    if novoTamanho and novoAlcance then
+        scriptHub:ajustarTamanhoHitbox(novoTamanho)
+        scriptHub:ajustarAlcanceDetecção(novoAlcance)
+        hitbox:Destroy() -- Remove a hitbox antiga
+        hitbox = scriptHub:criarHitbox(scriptHub.tamanhoHitbox) -- Cria uma nova hitbox
+    end
+end
+
+-- Conecta a função de atualização aos eventos de TextBox
+tamanhoHitboxTextBox.FocusLost:Connect(atualizarConfigurações)
+alcanceDetecçãoTextBox.FocusLost:Connect(atualizarConfigurações)
+
+-- Exemplo de uso
+scriptHub:ajustarTamanhoHitbox(6) -- Ajusta o tamanho da hitbox para 6
+scriptHub:ajustarAlcanceDetecção(15) -- Ajusta o alcance de detecção para 15
+
+-- Cria a hitbox e inicia a verificação de jogadores
+local hitbox = scriptHub:criarHitbox(scriptHub.tamanhoHitbox)
+while wait(1) do
+    scriptHub:verificarJogadores(hitbox, scriptHub.alcanceDetecção)
+end
